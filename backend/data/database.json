@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "customer@shop.test",
+      "displayName": "Demo Customer",
+      "passwordHash": "795810ccebc717e6757eff1de3c4acc8:f651514848e45dbb7d73745661c1a866eff98d62bafab85452f350ae850115c2db4ad699a39f296f922e2c0f073f49728bedf8d0ec760237ba8bbf2f8390200c"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Everyday Backpack",
+      "description": "Lightweight backpack with a padded laptop sleeve.",
+      "category": "Bags",
+      "price": 49.9,
+      "stock": 12,
+      "imageUrl": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=900"
+    },
+    {
+      "id": 2,
+      "name": "Minimal Sneakers",
+      "description": "Comfortable sneakers for daily wear.",
+      "category": "Shoes",
+      "price": 69.5,
+      "stock": 8,
+      "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900"
+    },
+    {
+      "id": 3,
+      "name": "Classic Watch",
+      "description": "Clean dial and durable leather strap.",
+      "category": "Accessories",
+      "price": 89,
+      "stock": 5,
+      "imageUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900"
+    },
+    {
+      "id": 4,
+      "name": "Wireless Headphones",
+      "description": "Over-ear headphones with rich, balanced sound.",
+      "category": "Electronics",
+      "price": 119,
+      "stock": 0,
+      "imageUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=900"
+    },
+    {
+      "id": 5,
+      "name": "Cotton Hoodie",
+      "description": "Soft mid-weight hoodie for cool evenings.",
+      "category": "Clothing",
+      "price": 39.9,
+      "stock": 20,
+      "imageUrl": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=900"
+    },
+    {
+      "id": 6,
+      "name": "Travel Bottle",
+      "description": "Insulated stainless-steel bottle, 600 ml.",
+      "category": "Accessories",
+      "price": 24,
+      "stock": 15,
+      "imageUrl": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=900"
+    }
+  ],
+  "orders": [],
+  "nextOrderId": 1
+}
