@@ -1,26 +1,26 @@
 {
-  "name": "backend",
+  "name": "flutter-shop-app-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
+  "description": "REST API and SQLite backend for Flutter Shop App",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "seed": "node src/seed.js",
+    "test": "node --test --test-concurrency=1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "zod": "^4.4.3"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "supertest": "^7.2.2"
+    "supertest": "^7.0.0"
   }
 }
