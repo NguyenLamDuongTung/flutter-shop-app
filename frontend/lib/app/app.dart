@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
-import '../features/auth/presentation/login_page.dart';
+import '../features/shop/presentation/shop_home_page.dart';
 
 class FlutterShopApp extends StatelessWidget {
   const FlutterShopApp({super.key});
@@ -9,10 +9,10 @@ class FlutterShopApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Shop App',
+      title: 'TechZone Store',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme(),
-      home: const LoginPage(),
+      home: const ShopHomePage(),
     );
   }
 }

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class AppTheme {
   const AppTheme._();
 
-  static const Color primaryColor = Color(0xFF5B4CF0);
-  static const Color backgroundColor = Color(0xFFF7F7FC);
+  static const Color primaryColor = Color(0xFF0B57D0);
+  static const Color backgroundColor = Color(0xFFF5F7FB);
+  static const Color headerColor = Color(0xFF08111F);
 
   static ThemeData lightTheme() {
     final colorScheme = ColorScheme.fromSeed(
@@ -16,12 +17,13 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: backgroundColor,
+      fontFamily: 'Arial',
 
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF1D1B20),
+        backgroundColor: headerColor,
+        foregroundColor: Colors.white,
       ),
 
       cardTheme: CardThemeData(
@@ -29,7 +31,7 @@ class AppTheme {
         color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: Color(0xFFE8E7EF)),
+          side: const BorderSide(color: Color(0xFFE1E6EF)),
         ),
       ),
 
@@ -38,11 +40,11 @@ class AppTheme {
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFDAD8E3)),
+          borderSide: const BorderSide(color: Color(0xFFDADFE8)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFDAD8E3)),
+          borderSide: const BorderSide(color: Color(0xFFDADFE8)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -53,6 +55,15 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
