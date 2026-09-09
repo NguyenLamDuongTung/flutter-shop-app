@@ -8,6 +8,14 @@ const orderSchema = z.object({
     .min(2)
     .max(80),
 
+  phone: z
+    .string()
+    .trim()
+    .regex(
+      /^(0|\+84)[0-9]{9,10}$/,
+      'Phone number is invalid.',
+    ),
+
   address: z
     .string()
     .trim()
@@ -32,17 +40,21 @@ const orderSchema = z.object({
     .min(1),
 });
 
-export function createOrderRouter({
-  store,
-}) {
+export function createOrderRouter({ store }) {
   const router = Router();
 
   router.get('/', (request, response) => {
-    const orders =
-      store.snapshot().orders.filter(
+    const orders = store
+      .snapshot()
+      .orders
+      .filter(
         (order) =>
           order.userId === request.user.id,
-      );
+      )
+      .sort((first, second) => {
+        return new Date(second.createdAt) -
+          new Date(first.createdAt);
+      });
 
     return response.json({
       orders,
@@ -50,120 +62,116 @@ export function createOrderRouter({
   });
 
   router.post('/', async (request, response) => {
-    const parsed = orderSchema.safeParse(
-      request.body,
-    );
+    const parsed =
+      orderSchema.safeParse(request.body);
 
     if (!parsed.success) {
       return response.status(400).json({
         message:
-          'Check the checkout information and cart items.',
+          'Vui lòng kiểm tra thông tin nhận hàng.',
+        errors: parsed.error.flatten(),
       });
     }
 
-    const result = await store.update(
-      (data) => {
-        const requestedProducts = new Map();
+    const result = await store.update((data) => {
+      const requestedProducts = new Map();
 
-        for (const item of parsed.data.items) {
-          const previousQuantity =
-            requestedProducts.get(
-              item.productId,
-            ) ?? 0;
-
-          requestedProducts.set(
+      for (const item of parsed.data.items) {
+        const previousQuantity =
+          requestedProducts.get(
             item.productId,
-            previousQuantity +
-              item.quantity,
-          );
-        }
+          ) ?? 0;
 
-        const resolvedItems = [];
+        requestedProducts.set(
+          item.productId,
+          previousQuantity + item.quantity,
+        );
+      }
 
-        for (
-          const [productId, quantity]
-          of requestedProducts
-        ) {
-          const product =
-            data.products.find(
-              (candidate) =>
-                candidate.id ===
-                productId,
-            );
+      const resolvedItems = [];
 
-          if (!product) {
-            return {
-              error:
-                'One of the products no longer exists.',
-              status: 400,
-            };
-          }
-
-          if (product.stock < quantity) {
-            return {
-              error:
-                `${product.name} does not have enough stock.`,
-              status: 409,
-            };
-          }
-
-          resolvedItems.push({
-            product,
-            quantity,
-          });
-        }
-
-        for (const item of resolvedItems) {
-          item.product.stock -=
-            item.quantity;
-        }
-
-        const orderItems =
-          resolvedItems.map(
-            ({
-              product,
-              quantity,
-            }) => ({
-              productId: product.id,
-              name: product.name,
-              unitPrice: product.price,
-              quantity,
-            }),
-          );
-
-        const total = Number(
-          orderItems
-            .reduce(
-              (sum, item) =>
-                sum +
-                item.unitPrice *
-                  item.quantity,
-              0,
-            )
-            .toFixed(2),
+      for (
+        const [productId, quantity]
+        of requestedProducts
+      ) {
+        const product = data.products.find(
+          (candidate) =>
+            candidate.id === productId,
         );
 
-        const order = {
-          id: data.nextOrderId,
-          userId: request.user.id,
-          customerName:
-            parsed.data.customerName,
-          address: parsed.data.address,
-          status: 'confirmed',
-          items: orderItems,
-          total,
-          createdAt:
-            new Date().toISOString(),
-        };
+        if (!product) {
+          return {
+            error:
+              'Một sản phẩm không còn tồn tại.',
+            status: 400,
+          };
+        }
 
-        data.nextOrderId += 1;
-        data.orders.push(order);
+        if (product.stock < quantity) {
+          return {
+            error:
+              `${product.name} không đủ số lượng trong kho.`,
+            status: 409,
+          };
+        }
 
-        return {
-          order,
-        };
-      },
-    );
+        resolvedItems.push({
+          product,
+          quantity,
+        });
+      }
+
+      for (const item of resolvedItems) {
+        item.product.stock -= item.quantity;
+      }
+
+      const orderItems = resolvedItems.map(
+        ({ product, quantity }) => {
+          return {
+            productId: product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            unitPrice: product.price,
+            quantity,
+            subtotal: Number(
+              (
+                product.price * quantity
+              ).toFixed(2),
+            ),
+          };
+        },
+      );
+
+      const total = Number(
+        orderItems
+          .reduce(
+            (sum, item) =>
+              sum + item.subtotal,
+            0,
+          )
+          .toFixed(2),
+      );
+
+      const order = {
+        id: data.nextOrderId,
+        userId: request.user.id,
+        customerName:
+          parsed.data.customerName,
+        phone: parsed.data.phone,
+        address: parsed.data.address,
+        status: 'confirmed',
+        items: orderItems,
+        total,
+        createdAt: new Date().toISOString(),
+      };
+
+      data.nextOrderId += 1;
+      data.orders.push(order);
+
+      return {
+        order,
+      };
+    });
 
     if (result.error) {
       return response
@@ -173,9 +181,7 @@ export function createOrderRouter({
         });
     }
 
-    return response.status(201).json(
-      result,
-    );
+    return response.status(201).json(result);
   });
 
   return router;

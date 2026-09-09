@@ -9,4 +9,8 @@ class AuthSession {
 
 abstract interface class AuthRepository {
   Future<AuthSession> login(String email, String password);
+
+  Future<AuthSession?> restoreSession();
+
+  Future<void> logout();
 }
