@@ -1,7 +1,7 @@
 {
   "name": "flutter-shop-app-backend",
   "version": "1.0.0",
-  "description": "REST API and SQLite backend for Flutter Shop App",
+  "description": "REST API and MySQL backend for Flutter Shop App",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "seed": "node src/seed.js",
+    "db:migrate": "node src/database/migrate.js",
+    "seed": "node src/database/seed.js",
+    "setup": "npm run db:migrate && npm run seed",
     "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
@@ -18,6 +20,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

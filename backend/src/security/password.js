@@ -5,7 +5,8 @@ import {
 } from 'node:crypto';
 
 export function hashPassword(password) {
-  const salt = randomBytes(16).toString('hex');
+  const salt =
+    randomBytes(16).toString('hex');
 
   const hash = scryptSync(
     password,
@@ -16,18 +17,40 @@ export function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
-export function verifyPassword(password, storedValue) {
-  const [salt, expectedHex] = storedValue.split(':');
+export function verifyPassword(
+  password,
+  storedValue,
+) {
+  if (
+    typeof storedValue !== 'string' ||
+    !storedValue.includes(':')
+  ) {
+    return false;
+  }
+
+  const [salt, expectedHex] =
+    storedValue.split(':');
 
   if (!salt || !expectedHex) {
     return false;
   }
 
-  const actual = scryptSync(password, salt, 64);
-  const expected = Buffer.from(expectedHex, 'hex');
+  const actual = scryptSync(
+    password,
+    salt,
+    64,
+  );
+
+  const expected = Buffer.from(
+    expectedHex,
+    'hex',
+  );
 
   return (
     actual.length === expected.length &&
-    timingSafeEqual(actual, expected)
+    timingSafeEqual(
+      actual,
+      expected,
+    )
   );
 }

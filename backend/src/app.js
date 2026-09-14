@@ -1,67 +1,48 @@
 import cors from 'cors';
 import express from 'express';
 
-import { requireAuth } from './middleware/auth.js';
-import {
-  errorHandler,
-  notFound,
-} from './middleware/error-handler.js';
-import { createAuthRouter } from './routes/auth.routes.js';
-import { createOrderRouter } from './routes/order.routes.js';
-import { createProductRouter } from './routes/product.routes.js';
+import { env } from './config/env.js';
+import { errorHandler } from './middleware/error-handler.js';
+import authRoutes from './routes/auth.routes.js';
+import productRoutes from './routes/product.routes.js';
 
-export function createApp({
-  store,
-  jwtSecret,
-  allowedOrigin = '*',
-}) {
-  const app = express();
+const app = express();
 
-  app.disable('x-powered-by');
+app.use(
+  cors({
+    origin: env.allowedOrigin === '*'
+      ? true
+      : env.allowedOrigin,
+  }),
+);
 
-  app.use(
-    cors({
-      origin: allowedOrigin,
-    }),
-  );
+app.use(express.json());
 
-  app.use(
-    express.json({
-      limit: '32kb',
-    }),
-  );
-
-  app.get('/health', (request, response) => {
-    return response.json({
-      status: 'ok',
-    });
+app.get('/api/health', (request, response) => {
+  response.json({
+    status: 'ok',
+    service: 'flutter-shop-backend',
   });
+});
 
-  app.use(
-    '/api/auth',
-    createAuthRouter({
-      store,
-      jwtSecret,
-    }),
-  );
+app.use(
+  '/api/auth',
+  authRoutes,
+);
 
-  app.use(
-    '/api/products',
-    createProductRouter({
-      store,
-    }),
-  );
+app.use(
+  '/api/products',
+  productRoutes,
+);
 
-  app.use(
-    '/api/orders',
-    requireAuth(jwtSecret),
-    createOrderRouter({
-      store,
-    }),
-  );
+app.use(
+  (request, response) => {
+    response.status(404).json({
+      message: 'Route not found.',
+    });
+  },
+);
 
-  app.use(notFound);
-  app.use(errorHandler);
+app.use(errorHandler);
 
-  return app;
-}
+export default app;

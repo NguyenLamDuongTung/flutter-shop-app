@@ -1,72 +1,110 @@
-import { Router } from 'express';
+import express from 'express';
 
-export function createProductRouter({
-  store,
-}) {
-  const router = Router();
+import { env } from '../config/env.js';
+import { createDatabase } from '../database/db.js';
 
-  router.get('/', (request, response) => {
-    const search = String(
-      request.query.search ?? '',
-    )
-      .trim()
-      .toLowerCase();
+const router = express.Router();
 
-    const category = String(
-      request.query.category ?? '',
-    )
-      .trim()
-      .toLowerCase();
+const database = createDatabase(
+  env.database,
+);
 
+router.get('/', async (request, response, next) => {
+  try {
     const products =
-      store.snapshot().products.filter(
-        (product) => {
-          const searchableText =
-            `${product.name} ${product.description}`
-              .toLowerCase();
-
-          const matchesSearch =
-            search.length === 0 ||
-            searchableText.includes(search);
-
-          const matchesCategory =
-            category.length === 0 ||
-            product.category.toLowerCase() ===
-              category;
-
-          return (
-            matchesSearch &&
-            matchesCategory
-          );
-        },
+      await database.query(
+        `
+          SELECT
+            id,
+            name,
+            description,
+            category,
+            price,
+            stock,
+            image_url,
+            is_active,
+            created_at,
+            updated_at
+          FROM products
+          WHERE is_active = TRUE
+          ORDER BY created_at DESC, id DESC
+        `,
       );
 
-    return response.json({
-      products,
-    });
-  });
-
-  router.get('/:id', (request, response) => {
-    const productId = Number(
-      request.params.id,
+    return response.json(
+      products.map((product) => ({
+        id: Number(product.id),
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        price: Number(product.price),
+        stock: Number(product.stock),
+        imageUrl: product.image_url,
+        isActive: Boolean(product.is_active),
+        createdAt: product.created_at,
+        updatedAt: product.updated_at,
+      })),
     );
+  } catch (error) {
+    next(error);
+  }
+});
 
-    const product =
-      store.snapshot().products.find(
-        (candidate) =>
-          candidate.id === productId,
-      );
+router.get('/:id', async (request, response, next) => {
+  try {
+    const id =
+      Number(request.params.id);
 
-    if (!product) {
-      return response.status(404).json({
-        message: 'Product was not found.',
+    if (!Number.isInteger(id)) {
+      return response.status(400).json({
+        message: 'Invalid product ID.',
       });
     }
 
-    return response.json({
-      product,
-    });
-  });
+    const products =
+      await database.query(
+        `
+          SELECT
+            id,
+            name,
+            description,
+            category,
+            price,
+            stock,
+            image_url,
+            is_active,
+            created_at,
+            updated_at
+          FROM products
+          WHERE id = ?
+          LIMIT 1
+        `,
+        [id],
+      );
 
-  return router;
-}
+    if (products.length === 0) {
+      return response.status(404).json({
+        message: 'Product not found.',
+      });
+    }
+
+    const product = products[0];
+
+    return response.json({
+      id: Number(product.id),
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      price: Number(product.price),
+      stock: Number(product.stock),
+      imageUrl: product.image_url,
+      isActive: Boolean(product.is_active),
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;

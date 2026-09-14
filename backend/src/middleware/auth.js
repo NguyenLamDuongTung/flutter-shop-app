@@ -1,31 +1,66 @@
 import jwt from 'jsonwebtoken';
 
-export function requireAuth(jwtSecret) {
-  return (request, response, next) => {
-    const authorization =
-      request.get('authorization') ?? '';
+import { env } from '../config/env.js';
 
-    const [scheme, token] =
-      authorization.split(' ');
+function extractToken(request) {
+  const authorization =
+    request.headers.authorization;
 
-    if (scheme !== 'Bearer' || !token) {
-      return response.status(401).json({
-        message: 'Authentication is required.',
-      });
-    }
+  if (
+    typeof authorization !== 'string' ||
+    !authorization.startsWith('Bearer ')
+  ) {
+    return null;
+  }
 
-    try {
-      request.user = jwt.verify(
-        token,
-        jwtSecret,
-      );
+  return authorization.substring(7).trim();
+}
 
-      return next();
-    } catch {
-      return response.status(401).json({
-        message:
-          'Your session is invalid or expired.',
-      });
-    }
-  };
+export function authenticate(request, response, next) {
+  const token = extractToken(request);
+
+  if (!token) {
+    return response.status(401).json({
+      message: 'Authentication required.',
+    });
+  }
+
+  try {
+    const payload = jwt.verify(
+      token,
+      env.jwtSecret,
+    );
+
+    request.user = {
+      id: Number(payload.sub),
+      email: payload.email,
+      role: payload.role,
+    };
+
+    next();
+  } catch {
+    return response.status(401).json({
+      message: 'Invalid or expired token.',
+    });
+  }
+}
+
+export function requireAdmin(
+  request,
+  response,
+  next,
+) {
+  if (!request.user) {
+    return response.status(401).json({
+      message: 'Authentication required.',
+    });
+  }
+
+  if (request.user.role !== 'admin') {
+    return response.status(403).json({
+      message: 'Admin access required.',
+    });
+  }
+
+  next();
 }
