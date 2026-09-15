@@ -3,6 +3,12 @@ import express from 'express';
 
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
+import {
+  authenticate,
+  requireAdmin,
+} from './middleware/auth.js';
+
+import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import productRoutes from './routes/product.routes.js';
 
@@ -10,9 +16,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: env.allowedOrigin === '*'
-      ? true
-      : env.allowedOrigin,
+    origin:
+      env.allowedOrigin === '*'
+        ? true
+        : env.allowedOrigin,
   }),
 );
 
@@ -25,23 +32,26 @@ app.get('/api/health', (request, response) => {
   });
 });
 
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+
+/*
+ * Every route below /api/admin requires:
+ * 1. A valid JWT.
+ * 2. An account with role = admin.
+ */
 app.use(
-  '/api/auth',
-  authRoutes,
+  '/api/admin',
+  authenticate,
+  requireAdmin,
+  adminRoutes,
 );
 
-app.use(
-  '/api/products',
-  productRoutes,
-);
-
-app.use(
-  (request, response) => {
-    response.status(404).json({
-      message: 'Route not found.',
-    });
-  },
-);
+app.use((request, response) => {
+  response.status(404).json({
+    message: 'Route not found.',
+  });
+});
 
 app.use(errorHandler);
 
